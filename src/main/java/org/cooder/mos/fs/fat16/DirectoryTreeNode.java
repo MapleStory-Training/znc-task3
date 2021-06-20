@@ -107,7 +107,7 @@ public class DirectoryTreeNode {
         if (children == null) {
             return null;
         }
-
+        // todo:循环比较文件名
         DirectoryTreeNode node = null;
         for (int i = 0; i < children.length; i++) {
             node = children[i];

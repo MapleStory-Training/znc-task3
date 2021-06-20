@@ -28,21 +28,21 @@ public class Layout {
 
     public static final int ROOT_DIRECTORY_REGION_START = FAT_REGION_START + FAT_REGION_SIZE;
     public static final int ROOT_DIRECTORY_REGION_SIZE = (ROOT_ENTRIES_COUNT * PER_DIRECTOR_ENTRY_SIZE)
-                    / PER_SECTOR_SIZE;
+            / PER_SECTOR_SIZE;
 
     public static final int DATA_REGION_START = ROOT_DIRECTORY_REGION_START + ROOT_DIRECTORY_REGION_SIZE;
     public static final int HEAD_CLUSTER_COUNT = DATA_REGION_START / SECTORS_PER_CLUSTER
-                    + ((DATA_REGION_START % SECTORS_PER_CLUSTER) == 0 ? 0 : 1);
+            + ((DATA_REGION_START % SECTORS_PER_CLUSTER) == 0 ? 0 : 1);
 
     /**
      * 引导扇区Layout，涉及到整形数的都是大端字节序
      */
     public static class BootSector {
         // 跳转指令，3 bytes
-        final byte[] jmpCode = new byte[] { (byte) 0xEB, 0x3C, (byte) 0x90 };
+        final byte[] jmpCode = new byte[]{(byte) 0xEB, 0x3C, (byte) 0x90};
 
         // Oem Name 8 bytes
-        final byte[] oemName = new byte[] { 'm', 'o', 's', '-', 'n', 'i', 'l', 0 };
+        final byte[] oemName = new byte[]{'m', 'o', 's', '-', 'n', 'i', 'l', 0};
 
         // 每扇区字节数，2 bytes
         final short sectorSize = PER_SECTOR_SIZE;
@@ -83,7 +83,7 @@ public class Layout {
 
         final byte[] volumeLabel = new byte[11];
 
-        final byte[] fileSystemType = new byte[] { 'F', 'A', 'T', '1', '6', 0, 0, 0 };
+        final byte[] fileSystemType = new byte[]{'F', 'A', 'T', '1', '6', 0, 0, 0};
 
         final byte[] bootstrapCode = new byte[448];
 
@@ -125,11 +125,13 @@ public class Layout {
     public static class DirectoryEntry {
 
         public static final int FILE_NAME_LENGTH = 8;
+        public static final int MAX_FILE_NAME_LENGTH = 255;
 
         public static final byte ATTR_MASK_READONLY = 0x01;
         public static final byte ATTR_MASK_HIDDEN = 0x02;
         public static final byte ATTR_MASK_SYSTEM = 0x04;
         public static final byte ATTR_MASK_VOLUME = 0x08;
+        public static final byte ATTR_MASK_LFN = ATTR_MASK_READONLY | ATTR_MASK_HIDDEN | ATTR_MASK_SYSTEM | ATTR_MASK_VOLUME;
         public static final byte ATTR_MASK_DIR = 0x10;
         public static final byte ATTR_MASK_ACHIEVE = 0x20;
 
@@ -148,7 +150,12 @@ public class Layout {
         public short startingCluster;
         public int fileSize;
 
-        public byte[] toBytes() {
+        // lfn
+        public byte ordinal;
+        public byte[] partOne = new byte[10];
+        public byte[] partTwo = new byte[20];
+
+        byte[] toBytes() {
             ByteBuffer buf = ByteBuffer.allocateDirect(32);
             buf.put(fileName);
             buf.put(extension);
@@ -170,7 +177,21 @@ public class Layout {
             return data;
         }
 
-        public static DirectoryEntry from(byte[] data) {
+        byte[] toLfnBytes() {
+            ByteBuffer buf = ByteBuffer.allocateDirect(32);
+            buf.put(ordinal);
+            buf.put(partOne);
+            buf.put(attrs);
+            buf.put(partTwo);
+
+            buf.rewind();
+
+            byte[] data = new byte[32];
+            buf.get(data);
+            return data;
+        }
+
+        static DirectoryEntry from(byte[] data) {
             ByteBuffer buf = ByteBuffer.allocateDirect(32);
             buf.put(data);
             buf.rewind();
@@ -192,72 +213,16 @@ public class Layout {
             return e;
         }
 
-        public String toString() {
-            return String.format("filename: %s, startCluster: %d", new String(fileName), startingCluster);
-        }
-    }
-
-    public static class LFNEntry extends DirectoryEntry{
-
-        public static final int MAX_FILE_NAME_LENGTH = 255;
-        public static final byte ATTR_MASK_LFN = 0x15;
-
-        // 8 bytes
-        public byte[] fileName = new byte[8];
-        public byte[] extension = new byte[3];
-        public byte attrs;
-        public byte reserved;
-        public byte creation;
-        public short createTime;
-        public short createDate;
-        public short lastAccessDate;
-        public short unused;
-        public short lastWriteTime;
-        public short lastWriteDate;
-        public short startingCluster;
-        public int fileSize;
-
-        @Override
-        public byte[] toBytes() {
-            ByteBuffer buf = ByteBuffer.allocateDirect(32);
-            buf.put(fileName);
-            buf.put(extension);
-            buf.put(attrs);
-            buf.put(reserved);
-            buf.put(creation);
-            buf.putShort(createTime);
-            buf.putShort(createDate);
-            buf.putShort(lastAccessDate);
-            buf.putShort(lastWriteTime);
-            buf.putShort(lastWriteDate);
-            buf.putShort(startingCluster);
-            buf.putInt(fileSize);
-
-            buf.rewind();
-
-            byte[] data = new byte[32];
-            buf.get(data);
-            return data;
-        }
-
-        public static DirectoryEntry from(byte[] data) {
+        static DirectoryEntry fromLfn(byte[] data) {
             ByteBuffer buf = ByteBuffer.allocateDirect(32);
             buf.put(data);
             buf.rewind();
 
             DirectoryEntry e = new DirectoryEntry();
-            buf.get(e.fileName, 0, 8);
-            buf.get(e.extension, 0, 3);
+            e.ordinal = buf.get();
+            buf.get(e.partOne, 0, 10);
             e.attrs = buf.get();
-            e.reserved = buf.get();
-            e.creation = buf.get();
-            e.createTime = buf.getShort();
-            e.createDate = buf.getShort();
-            e.lastAccessDate = buf.getShort();
-            e.lastWriteTime = buf.getShort();
-            e.lastWriteDate = buf.getShort();
-            e.startingCluster = buf.getShort();
-            e.fileSize = buf.getInt();
+            buf.get(e.partTwo, 0, 20);
 
             return e;
         }
