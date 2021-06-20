@@ -8,13 +8,16 @@
  */
 package org.cooder.mos.fs.fat16;
 
+import com.sun.javafx.css.SubCssMetaData;
+import jdk.nashorn.internal.ir.ReturnNode;
+import org.cooder.mos.device.IDisk;
+import org.cooder.mos.fs.fat16.Layout.DirectoryEntry;
+
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-
-import org.cooder.mos.device.IDisk;
-import org.cooder.mos.fs.fat16.Layout.DirectoryEntry;
 
 public class FAT16 implements IFAT16 {
     public static final int FAT_SIZE = Layout.SECTORS_PER_FAT * Layout.PER_SECTOR_SIZE / 2;
@@ -226,14 +229,45 @@ public class FAT16 implements IFAT16 {
             throw new IllegalStateException("file exist.");
         }
 
-        node = parent.create(name, isDir);
+        return this.create(parent, name, isDir);
+    }
 
-        // update
-        DirectoryEntry entry = node.getEntry();
-        entry.startingCluster = (short) (nextFreeCluster(-1) & 0xFFFF);
-        writeDirectoryTreeNode(node);
+    private DirectoryTreeNode create(DirectoryTreeNode parent, String name, boolean isDir) {
 
+        List<String> subNameList = this.spilt(name);
+        DirectoryTreeNode node = null;
+
+        for (int i = 0; i < subNameList.size(); i++) {
+            if (i == 0) {
+                node = parent.create(name, isDir, false);
+                DirectoryEntry entry = node.getEntry();
+                entry.startingCluster = (short) (nextFreeCluster(-1) & 0xFFFF);
+            } else {
+                node = parent.create(name, isDir, true);
+            }
+            writeDirectoryTreeNode(node);
+        }
         return node;
+    }
+
+    private List<String> spilt(String name) {
+
+        List<String> subNameList = new ArrayList<>();
+        byte[] b1 = name.getBytes();
+        byte[] b2 = new byte[DirectoryEntry.FILE_NAME_LENGTH];
+        System.arraycopy(b1, 0, b2, 0, Math.min(b1.length, DirectoryEntry.FILE_NAME_LENGTH));
+        subNameList.add(new String(b2));
+
+        int offset = DirectoryEntry.FILE_NAME_LENGTH;
+        while (offset < b1.length) {
+            int length = Math.min(b1.length - offset, DirectoryEntry.FILE_NAME_LFN_LENGTH);
+            b2 = new byte[length];
+            System.arraycopy(b1, offset, b2, 0, length);
+            subNameList.add(new String(b2));
+            offset += length;
+        }
+
+        return subNameList;
     }
 
     public void loadEntries(DirectoryTreeNode parent) {
