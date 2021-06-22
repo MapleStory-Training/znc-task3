@@ -134,7 +134,7 @@ public interface IFileSystem {
     /**
      * 返回指定目录下的所有文件路径
      *
-     * @param fd 父目录
+     * @param parent 父目录
      * @return
      */
     String[] list(FileDescriptor parent);

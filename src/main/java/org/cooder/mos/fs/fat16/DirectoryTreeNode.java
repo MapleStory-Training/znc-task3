@@ -8,7 +8,9 @@
  */
 package org.cooder.mos.fs.fat16;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.cooder.mos.fs.IFileSystem;
 import org.cooder.mos.fs.fat16.Layout.DirectoryEntry;
@@ -115,20 +117,33 @@ public class DirectoryTreeNode {
         if (children == null) {
             return null;
         }
-        // todo:循环比较文件名
         DirectoryTreeNode node;
+        List<String> nameList = new ArrayList<>();
+        int nameLength = DirectoryEntry.FILE_NAME_LENGTH;
         for (DirectoryTreeNode child : children) {
-            node = child;
-            if (nameEquals(node.entry, name)) {
-                return node;
+
+            if (FAT16.isLfnEntry(child.getEntry())) {
+                nameLength += DirectoryEntry.FILE_NAME_LFN_LENGTH;
+                nameList.add(child.getPath());
+            } else {
+                node = child;
+                nameList.add(child.getPath());
+                String nodeName = "";
+                for (int i = nameList.size() - 1; i >= 0; i--) {
+                    nodeName += nameList.get(i).substring(1);
+                }
+                nameList = new ArrayList<>();
+                if (nameEquals(nodeName, name, nameLength)) {
+                    return node;
+                }
             }
         }
 
         return null;
     }
 
-    public static boolean nameEquals(DirectoryEntry entry, String fileName) {
-        return Arrays.equals(entry.fileName, string2ByteArray(fileName, DirectoryEntry.FILE_NAME_LENGTH));
+    public static boolean nameEquals(String nodeName, String fileName, int nameLength) {
+        return Arrays.equals(string2ByteArray(nodeName, nameLength), string2ByteArray(fileName, nameLength));
     }
 
     public static byte[] string2ByteArray(String name, int length) {
