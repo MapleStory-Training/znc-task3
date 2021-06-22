@@ -31,8 +31,8 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
 @Command(name = "",
-                subcommands = { HelpCommand.class, Mkdir.class, ListCommand.class, Cat.class, Echo.class, Pwd.class,
-                        Remove.class, Touch.class })
+        subcommands = {HelpCommand.class, Mkdir.class, ListCommand.class, Cat.class, Echo.class, Pwd.class,
+                Remove.class, Touch.class})
 public class Shell implements Runnable {
     private FileDescriptor current;
 
@@ -55,7 +55,7 @@ public class Shell implements Runnable {
             scanner = new Scanner(in);
             while (true) {
                 prompt();
-                
+
                 String cmd = scanner.nextLine().trim();
                 if ("exit".equals(cmd)) {
                     out.println("bye~");
@@ -63,7 +63,7 @@ public class Shell implements Runnable {
                 } else if (cmd.length() == 0) {
                     continue;
                 }
-                
+
                 try {
                     String[] as = Utils.parseArgs(cmd);
                     new CommandLine(this).execute(as);
@@ -87,7 +87,7 @@ public class Shell implements Runnable {
         String[] paths = null;
 
         if (path.equals("/")) {
-            current = MosSystem.fileSystem().find(new String[] { "/" });
+            current = MosSystem.fileSystem().find(new String[]{"/"});
             return;
         }
 
@@ -114,7 +114,7 @@ public class Shell implements Runnable {
 
         current = node;
     }
-    
+
     public String[] absolutePath(String path) {
         if (path.equals(".")) {
             path = current.getPath();
@@ -129,12 +129,12 @@ public class Shell implements Runnable {
         }
         return Utils.normalizePath(path);
     }
-    
+
     @Override
     public void run() {
         // no-op
     }
-    
+
     private void prompt() {
         out.print(String.format("root@mos-nil:%s$", currentPath()));
     }

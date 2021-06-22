@@ -44,7 +44,7 @@ public class Utils {
             close(reader);
         }
     }
-    
+
     public static String[] normalizePath(String path) {
         List<String> ret = new ArrayList<>();
         String[] arr = path.split(IFileSystem.separator + "");

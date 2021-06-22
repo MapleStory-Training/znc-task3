@@ -125,9 +125,9 @@ public class Layout {
     public static class DirectoryEntry {
 
         public static final int FILE_NAME_LENGTH = 8;
-        public static final int FILE_NAME_LFN_LENGTH = 30;
-        public static final int FILE_NAME_PART_ONE_LENGTH = 10;
-        public static final int FILE_NAME_PART_TWO_LENGTH = 20;
+        public static final int FILE_NAME_LFN_LENGTH = 3;
+        public static final int FILE_NAME_PART_ONE_LENGTH = 1;
+        public static final int FILE_NAME_PART_TWO_LENGTH = 2;
         public static final int MAX_FILE_NAME_LENGTH = 255;
 
         public static final byte ATTR_MASK_READONLY = 0x01;

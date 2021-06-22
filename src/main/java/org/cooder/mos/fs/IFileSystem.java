@@ -26,21 +26,21 @@ public interface IFileSystem {
 
     /**
      * 引动启动文件系统
-     * 
+     *
      * @param disk
      */
     void bootstrap(IDisk disk);
 
     /**
      * 关闭文件系统
-     * 
+     *
      * @throws IOException
      */
     void shutdown() throws IOException;
 
     /**
      * 格式化
-     * 
+     *
      * @throws IOException
      */
     void format() throws IOException;
@@ -65,7 +65,6 @@ public interface IFileSystem {
     int APPEND = 2;
 
     /**
-     * 
      * @param paths
      * @return
      * @throws IOException
@@ -74,9 +73,9 @@ public interface IFileSystem {
 
     /**
      * 打开一个指定文件
-     * 
+     *
      * @param paths 除去路径分隔符的文件路径
-     * @param mode 文件打开模式
+     * @param mode  文件打开模式
      * @return 文件描述符
      * @throws IOException
      */
@@ -84,7 +83,7 @@ public interface IFileSystem {
 
     /**
      * 关闭一个指定文件
-     * 
+     *
      * @param fd 文件描述符
      * @throws IOException
      */
@@ -92,7 +91,7 @@ public interface IFileSystem {
 
     /**
      * 读取一个字节
-     * 
+     *
      * @param fd 文件描述符
      * @return 文件的下一个字节, 或当到达文件末尾时返回 <code>-1</code>
      * @throws IOException
@@ -101,23 +100,23 @@ public interface IFileSystem {
 
     /**
      * 往文件里写入一个字节
-     * 
+     *
      * @param fd 文件描述符
-     * @param b 待写入的字节
+     * @param b  待写入的字节
      * @throws IOException
      */
     void write(FileDescriptor fd, int b) throws IOException;
 
     /**
      * 将缓冲数据刷盘
-     * 
+     *
      * @param fd 文件描述符
      */
     void flush(FileDescriptor fd);
 
     /**
      * 删除一个文件
-     * 
+     *
      * @param fd 文件描述符
      * @throws IOException
      */
@@ -125,16 +124,16 @@ public interface IFileSystem {
 
     /**
      * 指定目录下创建一个目录
-     * 
+     *
      * @param parent 父目录
-     * @param name 目录名
+     * @param name   目录名
      * @return 新目录描述符
      */
     FileDescriptor createDirectory(FileDescriptor parent, String name);
 
     /**
      * 返回指定目录下的所有文件路径
-     * 
+     *
      * @param fd 父目录
      * @return
      */

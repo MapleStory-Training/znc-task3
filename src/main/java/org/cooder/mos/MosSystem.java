@@ -15,15 +15,16 @@ import org.cooder.mos.fs.FileSystem;
 import org.cooder.mos.fs.IFileSystem;
 
 public class MosSystem {
-    
-    private MosSystem() {}
-    
+
+    private MosSystem() {
+    }
+
     public final static InputStream in = System.in;
 
     public final static PrintStream out = System.out;
 
     public final static PrintStream err = System.err;
-    
+
     public static IFileSystem fileSystem() {
         return FileSystem.instance;
     }

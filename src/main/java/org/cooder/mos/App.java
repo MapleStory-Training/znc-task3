@@ -20,7 +20,7 @@ public class App {
         MosSystem.fileSystem().bootstrap(disk);
 
         try {
-            FileDescriptor current = MosSystem.fileSystem().find(new String[] { "/" });
+            FileDescriptor current = MosSystem.fileSystem().find(new String[]{"/"});
             Shell shell = new Shell(current);
             shell.loop();
         } finally {

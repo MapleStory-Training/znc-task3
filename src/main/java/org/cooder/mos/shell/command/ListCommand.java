@@ -14,12 +14,12 @@ import org.cooder.mos.api.MosFile;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Help.TextTable;
 
-@Command(name = "ls", aliases = { "ll" })
+@Command(name = "ls", aliases = {"ll"})
 public class ListCommand extends MosCommand {
     @Override
     public int runCommand() {
-        TextTable textTable = forColumnWidths(10, 14, 15);
-        
+        TextTable textTable = forColumnWidths(10, 14, 30);
+
         String path = shell.currentPath();
         MosFile file = new MosFile(path);
         MosFile[] files = file.listFiles();

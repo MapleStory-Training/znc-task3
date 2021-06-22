@@ -78,8 +78,16 @@ public class DirectoryTreeNode {
         if (isRoot()) {
             return "/";
         } else {
-            return byteArray2String(entry.fileName);
+            if (isLfnEntry(entry)) {
+                return byteArray2String(entry.partOne) + byteArray2String(entry.partTwo);
+            } else {
+                return byteArray2String(entry.fileName);
+            }
         }
+    }
+
+    private boolean isLfnEntry(DirectoryEntry entry) {
+        return (entry.attrs & DirectoryEntry.ATTR_MASK_LFN) == DirectoryEntry.ATTR_MASK_LFN;
     }
 
     public String getPath() {
@@ -153,8 +161,9 @@ public class DirectoryTreeNode {
         } else {
             b = string2ByteArray(name, DirectoryEntry.FILE_NAME_LFN_LENGTH);
             System.arraycopy(b, 0, entry.partOne, 0, DirectoryEntry.FILE_NAME_PART_ONE_LENGTH);
-            System.arraycopy(b, DirectoryEntry.FILE_NAME_PART_ONE_LENGTH, entry.partTwo, 0, DirectoryEntry.FILE_NAME_PART_ONE_LENGTH);
-            entry.attrs |= isDir ? DirectoryEntry.ATTR_MASK_LFN : 0;
+            System.arraycopy(b, DirectoryEntry.FILE_NAME_PART_ONE_LENGTH, entry.partTwo, 0, DirectoryEntry.FILE_NAME_PART_TWO_LENGTH);
+            entry.attrs |= DirectoryEntry.ATTR_MASK_LFN;
+            // todo:ordinal field
         }
 
         return node;
@@ -205,7 +214,7 @@ public class DirectoryTreeNode {
     }
 
     private boolean isFree() {
-        return entry.fileName[0] == 0;
+        return entry.fileName[0] == 0 && (entry.attrs & DirectoryEntry.ATTR_MASK_LFN) != DirectoryEntry.ATTR_MASK_LFN;
     }
 
     public boolean valid() {

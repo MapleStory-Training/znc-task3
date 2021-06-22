@@ -27,7 +27,7 @@ public class Cat extends MosCommand {
     public int runCommand() {
         String[] paths = shell.absolutePath(path);
         MosFile file = new MosFile(paths);
-        
+
         if (!file.exist()) {
             out.println(path + ": No such file or directory");
             return 1;
@@ -37,7 +37,7 @@ public class Cat extends MosCommand {
             out.println(path + ": is a directory");
             return 1;
         }
-        
+
         try {
             InputStreamReader reader = new InputStreamReader(new FileInputStream(file));
             Utils.copyStreamNoCloseOut(reader, out);

@@ -31,7 +31,7 @@ public interface IDisk extends Closeable {
 
     /**
      * 读取一个指定扇区的数据。
-     * 
+     *
      * @param sectorIdx 扇区索引，起始索引为0，终止索引为 {@code sectorCount()-1}
      * @return 扇区数据，返回的字节数组长度必须等于{@code sectorSize()}
      */
@@ -39,23 +39,23 @@ public interface IDisk extends Closeable {
 
     /**
      * 读取一个指定扇区数据到buffer
-     * 
+     *
      * @param sectorIdx 扇区索引，起始索引为0，终止索引为 {@code sectorCount()-1}
-     * @param buffer 字节数组长度必须等于{@code sectorSize()}
+     * @param buffer    字节数组长度必须等于{@code sectorSize()}
      */
     void readSector(int sectorIdx, byte[] buffer);
 
     /**
      * 写一个指定扇区。
-     * 
-     * @param sectorIdx 扇区索引，起始索引为0，终止索引为 {@code sectorCount()-1}
+     *
+     * @param sectorIdx  扇区索引，起始索引为0，终止索引为 {@code sectorCount()-1}
      * @param sectorData 待写入的数据. 长度必须等于{@code sectorSize()}
      */
     void writeSector(int sectorIdx, byte[] sectorData);
 
     /**
      * 清空磁盘数据
-     * 
+     *
      * @throws IOException
      */
     void clear() throws IOException;

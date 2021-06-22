@@ -18,13 +18,13 @@ import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 
 @Command(name = "help", header = "Displays help information about the specified command", synopsisHeading = "%nUsage: ",
-                helpCommand = true, description = {
-                        "%nWhen no COMMAND is given, the usage help for the main command is displayed.",
-                        "If a COMMAND is specified, the help for that command is shown.%n" })
+        helpCommand = true, description = {
+        "%nWhen no COMMAND is given, the usage help for the main command is displayed.",
+        "If a COMMAND is specified, the help for that command is shown.%n"})
 public class HelpCommand implements IHelpCommandInitializable2, Runnable {
 
     @Parameters(paramLabel = "COMMAND", descriptionKey = "helpCommand.command",
-                    description = "The COMMAND to display the usage help message for.")
+            description = "The COMMAND to display the usage help message for.")
     private String[] commands = new String[0];
 
     private CommandLine self;
@@ -50,7 +50,7 @@ public class HelpCommand implements IHelpCommandInitializable2, Runnable {
 
     @Override
     public void init(CommandLine helpCommandLine, ColorScheme colorScheme, PrintWriter out,
-                    PrintWriter err) {
+                     PrintWriter err) {
         this.self = helpCommandLine;
         this.colorScheme = colorScheme;
         this.out = out;

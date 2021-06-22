@@ -235,18 +235,16 @@ public class FAT16 implements IFAT16 {
     private DirectoryTreeNode create(DirectoryTreeNode parent, String name, boolean isDir) {
 
         List<String> subNameList = this.spilt(name);
-        DirectoryTreeNode node = null;
+        DirectoryTreeNode node;
 
-        for (int i = 0; i < subNameList.size(); i++) {
-            if (i == 0) {
-                node = parent.create(name, isDir, false);
-                DirectoryEntry entry = node.getEntry();
-                entry.startingCluster = (short) (nextFreeCluster(-1) & 0xFFFF);
-            } else {
-                node = parent.create(name, isDir, true);
-            }
+        for (int i = subNameList.size() - 1; i > 0; i--) {
+            node = parent.create(subNameList.get(i), isDir, true);
             writeDirectoryTreeNode(node);
         }
+        node = parent.create(subNameList.get(0), isDir, false);
+        DirectoryEntry entry = node.getEntry();
+        entry.startingCluster = (short) (nextFreeCluster(-1) & 0xFFFF);
+
         return node;
     }
 
@@ -299,7 +297,7 @@ public class FAT16 implements IFAT16 {
             for (int j = 0; j < sectorData.length; j += Layout.PER_DIRECTOR_ENTRY_SIZE) {
                 System.arraycopy(sectorData, j, buffer, 0, Layout.PER_DIRECTOR_ENTRY_SIZE);
                 DirectoryEntry entry = DirectoryEntry.from(buffer);
-                if (this.isLfnEntry(entry)) {
+                if (isLfnEntry(entry)) {
                     entry = DirectoryEntry.fromLfn(buffer);
                 }
                 DirectoryTreeNode node = new DirectoryTreeNode(parent, entry);
@@ -311,7 +309,7 @@ public class FAT16 implements IFAT16 {
         return nodes;
     }
 
-    private boolean isLfnEntry(DirectoryEntry entry) {
+    public static boolean isLfnEntry(DirectoryEntry entry) {
         return (entry.attrs & DirectoryEntry.ATTR_MASK_LFN) == DirectoryEntry.ATTR_MASK_LFN;
     }
 

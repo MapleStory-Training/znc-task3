@@ -30,11 +30,11 @@ public class FileOutputStream extends OutputStream {
         byte d = (byte) (b & 0xFF);
         MosSystem.fileSystem().write(fd, d);
     }
-    
+
     public void flush() {
         MosSystem.fileSystem().flush(fd);
     }
-    
+
     public void close() throws IOException {
         MosSystem.fileSystem().close(fd);
     }

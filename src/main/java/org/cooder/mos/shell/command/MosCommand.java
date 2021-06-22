@@ -33,6 +33,7 @@ import picocli.CommandLine.Help.Column.Overflow;
 import picocli.CommandLine.Help.TextTable;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
+
 @Command
 public abstract class MosCommand implements Callable<Integer> {
 
@@ -47,7 +48,7 @@ public abstract class MosCommand implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        if (in == null)  in = shell.in;
+        if (in == null) in = shell.in;
         if (out == null) out = shell.out;
         if (err == null) err = shell.err;
 
@@ -78,7 +79,7 @@ public abstract class MosCommand implements Callable<Integer> {
 
     @Command(name = ">>")
     public void redirectAppend(@Parameters(paramLabel = "<path>", description = "output file path") String path)
-                    throws IOException {
+            throws IOException {
         String[] paths = shell.absolutePath(path);
         FileOutputStream fos = new FileOutputStream(new MosFile(paths), FileSystem.APPEND);
         this.out = new PrintStream(fos);

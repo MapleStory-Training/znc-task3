@@ -39,7 +39,7 @@ public class FileDisk implements IDisk {
     public long capacity() {
         return 2 * 1024 * 1024 * 1024L;  // 2G
     }
-    
+
     @Override
     public void readSector(int sectorIdx, byte[] buffer) {
         byte[] data = readSector(sectorIdx);
@@ -78,7 +78,7 @@ public class FileDisk implements IDisk {
         raf.setLength(0);
         raf.setLength(capacity());
     }
-    
+
     @Override
     public void close() throws IOException {
         raf.close();

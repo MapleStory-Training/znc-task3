@@ -32,7 +32,7 @@ public class FatFileOutputStream extends OutputStream {
         this.fat = fat;
         this.pos = pos;
         this.node = node;
-        
+
         disk.readSector(currentSectorIdx, buffer);
     }
 
@@ -47,27 +47,27 @@ public class FatFileOutputStream extends OutputStream {
         count++;
         markCount++;
     }
-    
+
     @Override
     public void flush() {
         // flush data
         disk.writeSector(currentSectorIdx, buffer);
-        
+
         // update file entry
         int fileSize = markCount + node.getFileSize();
         node.setFileSize(fileSize);
         node.setWriteTime(System.currentTimeMillis());
-        
+
         fat.writeDirectoryTreeNode(node);
-        
+
         markCount = 0;
     }
-    
+
     @Override
     public void close() {
         flush();
     }
-    
+
     public int getCount() {
         return count;
     }
@@ -89,7 +89,7 @@ public class FatFileOutputStream extends OutputStream {
             if (nextCluster < 0) {
                 return -1;
             }
-            
+
             currentClusterIdx = nextCluster;
             next = firstSectorIdx(currentClusterIdx);
         } else {

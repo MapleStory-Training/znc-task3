@@ -29,7 +29,7 @@ public class FatFileInputStream extends InputStream {
         this.currentSectorIdx = sectorIdx;
         this.limit = limit;
         this.fat = fat;
-        
+
         disk.readSector(currentSectorIdx, buffer);
     }
 
@@ -62,7 +62,7 @@ public class FatFileInputStream extends InputStream {
         if (next < 0) {
             return false;
         }
-        
+
         currentSectorIdx = next;
         disk.readSector(currentSectorIdx, buffer);
         pos = 0;

@@ -86,7 +86,7 @@ public class MosFile implements IFile {
     public MosFile[] listFiles() {
         String[] children = MosSystem.fileSystem().list(fd);
         
-        List<MosFile> list = new ArrayList<MosFile>();
+        List<MosFile> list = new ArrayList<>();
         for (String path : children) {
             list.add(new MosFile(path));
         }
