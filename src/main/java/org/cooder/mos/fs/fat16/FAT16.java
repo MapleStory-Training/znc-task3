@@ -8,19 +8,16 @@
  */
 package org.cooder.mos.fs.fat16;
 
-import com.sun.javafx.css.SubCssMetaData;
-import jdk.nashorn.internal.ir.ReturnNode;
 import org.cooder.mos.device.IDisk;
 import org.cooder.mos.fs.fat16.Layout.DirectoryEntry;
 
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class FAT16 implements IFAT16 {
-    public static final int FAT_SIZE = Layout.SECTORS_PER_FAT * Layout.PER_SECTOR_SIZE / 2;
+    private static final int FAT_SIZE = Layout.SECTORS_PER_FAT * Layout.PER_SECTOR_SIZE / 2;
 
     public static final int FREE_CLUSTER = 0x0000;
     public static final int END_OF_CHAIN = 0xFFF8;
@@ -108,10 +105,12 @@ public class FAT16 implements IFAT16 {
 
     @Override
     public synchronized void writeCluster(int clusterIdx, int valueToWrite) {
-        if (clusterIdx < 0) return;
+        if (clusterIdx < 0) {
+            return;
+        }
 
         table[clusterIdx] = valueToWrite;
-        flush(); // TODO
+        flush();
     }
 
     private synchronized void loadFAT() {
@@ -129,12 +128,12 @@ public class FAT16 implements IFAT16 {
         }
     }
 
-    public synchronized void reload() {
+    private synchronized void reload() {
         loadFAT();
         loadSubEntries(root);
     }
 
-    public synchronized void flush() {
+    private synchronized void flush() {
         ByteBuffer buffer = ByteBuffer.allocate(Layout.SECTORS_PER_FAT * Layout.PER_SECTOR_SIZE);
         for (int i = 0; i < FAT_SIZE; i++) {
             short value = (short) (table[i] & 0xFFFF);
@@ -152,13 +151,13 @@ public class FAT16 implements IFAT16 {
 
     // 
     // Directory Tree Method.
-    // 
+    // todo:写入fat？
 
     @Override
     public void writeDirectoryTreeNode(DirectoryTreeNode node) {
         DirectoryEntry entry = node.getEntry();
         byte[] entryData;
-        if (this.isLfnEntry(entry)) {
+        if (isLfnEntry(entry)) {
             entryData = entry.toLfnBytes();
         } else {
             entryData = entry.toBytes();
@@ -204,7 +203,7 @@ public class FAT16 implements IFAT16 {
         }
 
         if (!parent.isDir()) {
-            throw new IllegalArgumentException(parent.getName() + ": not directory");
+            throw new IllegalArgumentException(parent.getLfName() + ": not directory");
         }
 
         if (parent.isFold()) {
@@ -244,7 +243,11 @@ public class FAT16 implements IFAT16 {
         node = parent.create(subNameList.get(0), isDir, false);
         DirectoryEntry entry = node.getEntry();
         entry.startingCluster = (short) (nextFreeCluster(-1) & 0xFFFF);
-
+        if (isDir) {
+            node.setLfgName("/" + name);
+        } else {
+            node.setLfgName(name);
+        }
         return node;
     }
 
@@ -284,8 +287,8 @@ public class FAT16 implements IFAT16 {
             limit = Layout.SECTORS_PER_CLUSTER;
         }
 
-        List<DirectoryTreeNode> childre = loadEntries(parent, sectorIdx, limit);
-        parent.setChildren(childre.toArray(new DirectoryTreeNode[childre.size()]));
+        List<DirectoryTreeNode> children = loadEntries(parent, sectorIdx, limit);
+        parent.setChildren(children.toArray(new DirectoryTreeNode[0]));
         parent.unfold();
     }
 
@@ -309,7 +312,7 @@ public class FAT16 implements IFAT16 {
         return nodes;
     }
 
-    public static boolean isLfnEntry(DirectoryEntry entry) {
+    static boolean isLfnEntry(DirectoryEntry entry) {
         return (entry.attrs & DirectoryEntry.ATTR_MASK_LFN) == DirectoryEntry.ATTR_MASK_LFN;
     }
 

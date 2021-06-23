@@ -8,12 +8,12 @@
  */
 package org.cooder.mos.fs.fat16;
 
+import org.cooder.mos.fs.IFileSystem;
+import org.cooder.mos.fs.fat16.Layout.DirectoryEntry;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.cooder.mos.fs.IFileSystem;
-import org.cooder.mos.fs.fat16.Layout.DirectoryEntry;
 
 public class DirectoryTreeNode {
     private DirectoryEntry entry;
@@ -22,8 +22,9 @@ public class DirectoryTreeNode {
     private int sectorIdx = -1;
     private int sectorOffset = -1;
     private boolean fold = true;
+    private String lfName;
 
-    public DirectoryTreeNode(DirectoryTreeNode parent, DirectoryEntry entry) {
+    DirectoryTreeNode(DirectoryTreeNode parent, DirectoryEntry entry) {
         this.parent = parent;
         this.entry = entry;
     }
@@ -32,23 +33,23 @@ public class DirectoryTreeNode {
         return children;
     }
 
-    public void setChildren(DirectoryTreeNode[] children) {
+    void setChildren(DirectoryTreeNode[] children) {
         this.children = children;
     }
 
-    public int getSectorIdx() {
+    int getSectorIdx() {
         return sectorIdx;
     }
 
-    public void setSectorIdx(int sectorIdx) {
+    void setSectorIdx(int sectorIdx) {
         this.sectorIdx = sectorIdx;
     }
 
-    public int getSectorOffset() {
+    int getSectorOffset() {
         return sectorOffset;
     }
 
-    public void setSectorOffset(int sectorOffset) {
+    void setSectorOffset(int sectorOffset) {
         this.sectorOffset = sectorOffset;
     }
 
@@ -56,6 +57,7 @@ public class DirectoryTreeNode {
         return entry;
     }
 
+    // todo:判断是否通用
     public boolean isDir() {
         return isRoot() || ((entry.attrs & DirectoryEntry.ATTR_MASK_DIR) != 0);
     }
@@ -64,11 +66,11 @@ public class DirectoryTreeNode {
         return entry == null;
     }
 
-    public boolean isFold() {
+    boolean isFold() {
         return fold;
     }
 
-    public void unfold() {
+    void unfold() {
         this.fold = false;
     }
 
@@ -88,24 +90,39 @@ public class DirectoryTreeNode {
         }
     }
 
+    public String getLfName() {
+        if (isRoot()) {
+            return "/";
+        } else {
+            return lfName;
+        }
+    }
+
+    void setLfgName(String lfName) {
+        this.lfName = lfName;
+    }
+
     private boolean isLfnEntry(DirectoryEntry entry) {
         return (entry.attrs & DirectoryEntry.ATTR_MASK_LFN) == DirectoryEntry.ATTR_MASK_LFN;
     }
 
-    public String getPath() {
+    public String getLfPath() {
         if (isRoot()) {
             return "";
         }
 
         StringBuilder sb = new StringBuilder();
         if (parent != null) {
-            sb.append(parent.getPath()).append(IFileSystem.separator);
+            sb.append(parent.getLfPath()).append(IFileSystem.separator);
         }
-        sb.append(getName());
-        return sb.toString();
+        String subName = getLfName();
+        if (subName.startsWith("/")) {
+            return sb.append(subName.substring(1)).toString();
+        }
+        return sb.append(subName).toString();
     }
 
-    public DirectoryTreeNode find(String name) {
+    DirectoryTreeNode find(String name) {
         if (!isDir()) {
             throw new IllegalArgumentException();
         }
@@ -124,16 +141,21 @@ public class DirectoryTreeNode {
 
             if (FAT16.isLfnEntry(child.getEntry())) {
                 nameLength += DirectoryEntry.FILE_NAME_LFN_LENGTH;
-                nameList.add(child.getPath());
+                nameList.add(child.getName());
             } else {
                 node = child;
-                nameList.add(child.getPath());
+                nameList.add(child.getName());
                 String nodeName = "";
                 for (int i = nameList.size() - 1; i >= 0; i--) {
-                    nodeName += nameList.get(i).substring(1);
+                    String subName = nameList.get(i);
+                    if (subName.startsWith("/")) {
+                        nodeName += subName.substring(1);
+                    } else {
+                        nodeName += subName;
+                    }
                 }
                 nameList = new ArrayList<>();
-                if (nameEquals(nodeName, name, nameLength)) {
+                if (nameEquals(nodeName, name, Math.max(nameLength, name.length()))) {
                     return node;
                 }
             }
@@ -142,18 +164,18 @@ public class DirectoryTreeNode {
         return null;
     }
 
-    public static boolean nameEquals(String nodeName, String fileName, int nameLength) {
+    private static boolean nameEquals(String nodeName, String fileName, int nameLength) {
         return Arrays.equals(string2ByteArray(nodeName, nameLength), string2ByteArray(fileName, nameLength));
     }
 
-    public static byte[] string2ByteArray(String name, int length) {
+    private static byte[] string2ByteArray(String name, int length) {
         byte[] b1 = name.getBytes();
         byte[] b2 = new byte[length];
         System.arraycopy(b1, 0, b2, 0, Math.min(b1.length, length));
         return b2;
     }
 
-    public static String byteArray2String(byte[] b) {
+    private static String byteArray2String(byte[] b) {
         StringBuilder sb = new StringBuilder();
         for (byte value : b) {
             if (value == 0) {
@@ -164,7 +186,7 @@ public class DirectoryTreeNode {
         return sb.toString();
     }
 
-    public DirectoryTreeNode create(String name, boolean isDir, boolean lfnEntry) {
+    DirectoryTreeNode create(String name, boolean isDir, boolean lfnEntry) {
         DirectoryTreeNode node = nextFreeNode();
         DirectoryEntry entry = node.entry;
         byte[] b;
@@ -184,7 +206,7 @@ public class DirectoryTreeNode {
         return node;
     }
 
-    public DirectoryTreeNode firstTreeNode() {
+    DirectoryTreeNode firstTreeNode() {
         if (!isDir()) {
             throw new IllegalArgumentException();
         }
@@ -233,10 +255,10 @@ public class DirectoryTreeNode {
     }
 
     public boolean valid() {
-        return entry != null && !isFree();
+        return entry != null && entry.fileName[0] != 0;
     }
 
-    public void reset() {
+    void reset() {
         this.fold = true;
         this.entry = new DirectoryEntry();
         this.children = null;
@@ -246,7 +268,7 @@ public class DirectoryTreeNode {
         this.entry.fileSize = fileSize;
     }
 
-    public void setWriteTime(long currentTimeMillis) {
+    void setWriteTime(long currentTimeMillis) {
         int sec = (int) (currentTimeMillis / 1000);
         this.entry.lastWriteTime = (short) (sec & 0xFFFF);
         this.entry.lastWriteDate = (short) (sec >>> 16 & 0xFFFF);
@@ -259,7 +281,7 @@ public class DirectoryTreeNode {
         return sec * 1000;
     }
 
-    public int getFileSize() {
+    int getFileSize() {
         return entry.fileSize;
     }
 }

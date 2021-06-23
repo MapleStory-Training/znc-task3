@@ -45,8 +45,7 @@ public class Shell implements Runnable {
     }
 
     public String currentPath() {
-        String path = current.isRoot() ? current.getName() : current.getPath();
-        return path;
+        return current.isRoot() ? current.getLfName() : current.getLfPath();
     }
 
     public void loop() {
@@ -84,7 +83,7 @@ public class Shell implements Runnable {
 
     @Command(name = "cd")
     public void cd(@Parameters(paramLabel = "<path>") String path) {
-        String[] paths = null;
+        String[] paths;
 
         if (path.equals("/")) {
             current = MosSystem.fileSystem().find(new String[]{"/"});
@@ -117,15 +116,15 @@ public class Shell implements Runnable {
 
     public String[] absolutePath(String path) {
         if (path.equals(".")) {
-            path = current.getPath();
+            path = current.getLfPath();
         } else if (path.equals("..")) {
             if (current.isRoot()) {
-                path = current.getPath();
+                path = current.getLfPath();
             } else {
                 path = current.getParentPath();
             }
         } else if (!path.startsWith("/")) {
-            path = current.getPath() + IFileSystem.separator + path;
+            path = current.getLfPath() + IFileSystem.separator + path;
         }
         return Utils.normalizePath(path);
     }

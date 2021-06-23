@@ -33,8 +33,8 @@ public class FileSystem implements IFileSystem {
     }
 
     @Override
-    public void bootstrap(IDisk _disk) {
-        disk = _disk;
+    public void bootstrap(IDisk disk) {
+        this.disk = disk;
         fat = new FAT16(disk);
     }
 
@@ -62,7 +62,7 @@ public class FileSystem implements IFileSystem {
 
     @Override
     public FileDescriptor open(String[] paths, int mode) throws IOException {
-        FileDescriptor descriptor = null;
+        FileDescriptor descriptor;
         DirectoryTreeNode node = findEntryNode(paths);
         if (mode == READ) {
             if (node == null) {
@@ -111,9 +111,9 @@ public class FileSystem implements IFileSystem {
     @Override
     public FileDescriptor createDirectory(FileDescriptor parent, String name) {
         DirectoryTreeNode node = fat.createTreeNode(parent.node, name, true);
-        return new FileDescriptor(Utils.normalizePath(node.getPath()), node);
+        return new FileDescriptor(Utils.normalizePath(node.getLfPath()), node);
     }
-
+    //todo:第一次调用ls报错
     @Override
     public String[] list(FileDescriptor parent) {
         fat.loadEntries(parent.node);
@@ -123,19 +123,9 @@ public class FileSystem implements IFileSystem {
         String name;
         DirectoryTreeNode[] nodes = parent.node.getChildren();
         for (DirectoryTreeNode s : nodes) {
+            //todo:启动时第一次mkdir有bug，重启时数据丢失
             if (s.valid()) {
-                String path = s.getPath();
-                if (FAT16.isLfnEntry(s.getEntry())) {
-                    nameList.add(path);
-                } else {
-                    nameList.add(path);
-                    name = nameList.get(nameList.size() - 1);
-                    for (int i = nameList.size() - 2; i >= 0; i--) {
-                        name += nameList.get(i).substring(1);
-                    }
-                    list.add(name);
-                    nameList = new ArrayList<>();
-                }
+                list.add(s.getLfName());
             }
         }
         return list.toArray(new String[0]);

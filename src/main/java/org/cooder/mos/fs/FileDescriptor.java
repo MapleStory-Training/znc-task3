@@ -37,7 +37,7 @@ public class FileDescriptor {
         fos.write(b);
     }
 
-    public void flush() {
+    void flush() {
         fos.flush();
     }
 
@@ -46,18 +46,18 @@ public class FileDescriptor {
         Utils.close(fos);
     }
 
-    public int read() throws IOException {
+    int read() throws IOException {
         if (fis == null) {
             throw new IllegalStateException();
         }
         return fis.read();
     }
 
-    public void setFatFileInputStream(FatFileInputStream fis) {
+    void setFatFileInputStream(FatFileInputStream fis) {
         this.fis = fis;
     }
 
-    public void setFatFileOutputStream(FatFileOutputStream fos) {
+    void setFatFileOutputStream(FatFileOutputStream fos) {
         this.fos = fos;
     }
 
@@ -65,16 +65,16 @@ public class FileDescriptor {
         return node.isRoot();
     }
 
-    public String getName() {
-        return node.getName();
+    public String getLfName() {
+        return node.getLfName();
     }
 
-    public String getPath() {
-        return node.getPath();
+    public String getLfPath() {
+        return node.getLfPath();
     }
 
     public String getParentPath() {
-        return node.parent.getPath();
+        return node.parent.getLfPath();
     }
 
     public boolean isDir() {
@@ -89,7 +89,7 @@ public class FileDescriptor {
         return node.getWriteTime();
     }
 
-    public int getStartingCluster() {
+    int getStartingCluster() {
         return (node.getEntry().startingCluster & 0xFFFF);
     }
 }

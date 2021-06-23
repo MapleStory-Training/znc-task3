@@ -30,7 +30,7 @@ public class Touch extends MosCommand {
         try {
             MosFile file = new MosFile(paths);
             if (!file.exist()) {
-                fos = new FileOutputStream(new MosFile(paths), FileSystem.WRITE);
+                fos = new FileOutputStream(file, FileSystem.WRITE);
             }
         } catch (IOException e) {
             err.println(e.getMessage());
