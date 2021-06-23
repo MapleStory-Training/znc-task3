@@ -70,11 +70,11 @@ public class FileDescriptor {
     }
 
     public String getLfPath() {
-        return node.getLfPath();
+        return node.getLfnPath();
     }
 
     public String getParentPath() {
-        return node.parent.getLfPath();
+        return node.parent.getLfnPath();
     }
 
     public boolean isDir() {

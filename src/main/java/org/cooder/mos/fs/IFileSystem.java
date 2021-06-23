@@ -25,7 +25,7 @@ public interface IFileSystem {
     char pathSeparator = ':';
 
     /**
-     * 引动启动文件系统
+     * 引导启动文件系统
      *
      * @param disk
      */

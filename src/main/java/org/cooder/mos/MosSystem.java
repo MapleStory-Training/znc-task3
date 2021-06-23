@@ -26,6 +26,6 @@ public class MosSystem {
     public final static PrintStream err = System.err;
 
     public static IFileSystem fileSystem() {
-        return FileSystem.instance;
+        return FileSystem.INSTANCE;
     }
 }

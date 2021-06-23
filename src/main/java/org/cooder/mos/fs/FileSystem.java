@@ -23,11 +23,11 @@ import org.cooder.mos.fs.fat16.FatFileOutputStream;
 import org.cooder.mos.fs.fat16.Layout;
 
 public class FileSystem implements IFileSystem {
-    public static final FileSystem instance = new FileSystem();
+    public static final FileSystem INSTANCE = new FileSystem();
 
     private IDisk disk;
     private FAT16 fat;
-    private final Set<FileDescriptor> OPEN_FILES = new HashSet<FileDescriptor>();
+    private final Set<FileDescriptor> OPEN_FILES = new HashSet<>();
 
     private FileSystem() {
     }
@@ -111,21 +111,18 @@ public class FileSystem implements IFileSystem {
     @Override
     public FileDescriptor createDirectory(FileDescriptor parent, String name) {
         DirectoryTreeNode node = fat.createTreeNode(parent.node, name, true);
-        return new FileDescriptor(Utils.normalizePath(node.getLfPath()), node);
+        return new FileDescriptor(Utils.normalizePath(node.getLfnPath()), node);
     }
-    //todo:第一次调用ls报错
+
     @Override
     public String[] list(FileDescriptor parent) {
         fat.loadEntries(parent.node);
 
         List<String> list = new ArrayList<>();
-        List<String> nameList = new ArrayList<>();
-        String name;
         DirectoryTreeNode[] nodes = parent.node.getChildren();
         for (DirectoryTreeNode s : nodes) {
-            //todo:启动时第一次mkdir有bug，重启时数据丢失
             if (s.valid()) {
-                list.add(s.getLfName());
+                list.add(s.getLfnPath());
             }
         }
         return list.toArray(new String[0]);
@@ -207,8 +204,7 @@ public class FileSystem implements IFileSystem {
 
             // cluster chain full, alloc next cluster
             if (clusterCount * Layout.PER_CLUSTER_SIZE == fileSize) {
-                int next = fat.nextFreeCluster(lastClusterIdx);
-                lastClusterIdx = next;
+                lastClusterIdx = fat.nextFreeCluster(lastClusterIdx);
             }
 
             int offset = fileSize % Layout.PER_CLUSTER_SIZE;

@@ -243,10 +243,11 @@ public class FAT16 implements IFAT16 {
         node = parent.create(subNameList.get(0), isDir, false);
         DirectoryEntry entry = node.getEntry();
         entry.startingCluster = (short) (nextFreeCluster(-1) & 0xFFFF);
+        writeDirectoryTreeNode(node);
         if (isDir) {
-            node.setLfgName("/" + name);
+            node.setLfName("/" + name);
         } else {
-            node.setLfgName(name);
+            node.setLfName(name);
         }
         return node;
     }
@@ -288,12 +289,39 @@ public class FAT16 implements IFAT16 {
         }
 
         List<DirectoryTreeNode> children = loadEntries(parent, sectorIdx, limit);
+        this.fillLfName(children);
         parent.setChildren(children.toArray(new DirectoryTreeNode[0]));
         parent.unfold();
     }
 
+    private void fillLfName(List<DirectoryTreeNode> children) {
+
+        List<String> nameList = new ArrayList<>();
+        for (DirectoryTreeNode child : children) {
+
+            if (FAT16.isLfnEntry(child.getEntry())) {
+                nameList.add(child.getName());
+            } else if (!child.isFree()) {
+                nameList.add(child.getName());
+                String nodeName = "";
+                for (int i = nameList.size() - 1; i >= 0; i--) {
+                    String subName = nameList.get(i);
+                    if (subName.startsWith("/")) {
+                        nodeName += subName.substring(1);
+                    } else {
+                        nodeName += subName;
+                    }
+                }
+                child.setLfName(nodeName);
+                nameList = new ArrayList<>();
+            } else {
+                nameList = new ArrayList<>();
+            }
+        }
+    }
+
     private List<DirectoryTreeNode> loadEntries(DirectoryTreeNode parent, int sectorIdx, int limitSectorCount) {
-        List<DirectoryTreeNode> nodes = new ArrayList<DirectoryTreeNode>(limitSectorCount);
+        List<DirectoryTreeNode> nodes = new ArrayList<>(limitSectorCount);
         byte[] buffer = new byte[Layout.PER_DIRECTOR_ENTRY_SIZE];
         for (int i = 0; i < limitSectorCount; i++) {
             byte[] sectorData = disk.readSector(sectorIdx + i);

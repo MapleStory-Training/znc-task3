@@ -57,7 +57,7 @@ public class DirectoryTreeNode {
         return entry;
     }
 
-    // todo:判断是否通用
+    // todo:检查是否通用
     public boolean isDir() {
         return isRoot() || ((entry.attrs & DirectoryEntry.ATTR_MASK_DIR) != 0);
     }
@@ -98,7 +98,7 @@ public class DirectoryTreeNode {
         }
     }
 
-    void setLfgName(String lfName) {
+    void setLfName(String lfName) {
         this.lfName = lfName;
     }
 
@@ -106,16 +106,16 @@ public class DirectoryTreeNode {
         return (entry.attrs & DirectoryEntry.ATTR_MASK_LFN) == DirectoryEntry.ATTR_MASK_LFN;
     }
 
-    public String getLfPath() {
+    public String getLfnPath() {
         if (isRoot()) {
             return "";
         }
 
         StringBuilder sb = new StringBuilder();
         if (parent != null) {
-            sb.append(parent.getLfPath()).append(IFileSystem.separator);
+            sb.append(parent.getLfnPath()).append(IFileSystem.separator);
         }
-        String subName = getLfName();
+        String subName = this.getLfName();
         if (subName.startsWith("/")) {
             return sb.append(subName.substring(1)).toString();
         }
@@ -250,7 +250,7 @@ public class DirectoryTreeNode {
         return null;
     }
 
-    private boolean isFree() {
+    boolean isFree() {
         return entry.fileName[0] == 0 && (entry.attrs & DirectoryEntry.ATTR_MASK_LFN) != DirectoryEntry.ATTR_MASK_LFN;
     }
 
