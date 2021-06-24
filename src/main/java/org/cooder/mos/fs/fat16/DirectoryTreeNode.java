@@ -102,7 +102,7 @@ public class DirectoryTreeNode {
         this.lfName = lfName;
     }
 
-    private boolean isLfnEntry(DirectoryEntry entry) {
+    static boolean isLfnEntry(DirectoryEntry entry) {
         return (entry.attrs & DirectoryEntry.ATTR_MASK_LFN) == DirectoryEntry.ATTR_MASK_LFN;
     }
 
@@ -139,7 +139,7 @@ public class DirectoryTreeNode {
         int nameLength = DirectoryEntry.FILE_NAME_LENGTH;
         for (DirectoryTreeNode child : children) {
 
-            if (FAT16.isLfnEntry(child.getEntry())) {
+            if (isLfnEntry(child.getEntry())) {
                 nameLength += DirectoryEntry.FILE_NAME_LFN_LENGTH;
                 nameList.add(child.getName());
             } else {
@@ -251,7 +251,11 @@ public class DirectoryTreeNode {
     }
 
     boolean isFree() {
-        return entry.fileName[0] == 0 && (entry.attrs & DirectoryEntry.ATTR_MASK_LFN) != DirectoryEntry.ATTR_MASK_LFN;
+        return entry.fileName[0] == 0 && !isHidden();
+    }
+
+    private boolean isHidden() {
+        return (entry.attrs & DirectoryEntry.ATTR_MASK_HIDDEN) != 0;
     }
 
     public boolean valid() {
@@ -261,6 +265,17 @@ public class DirectoryTreeNode {
     void reset() {
         this.fold = true;
         this.entry = new DirectoryEntry();
+        this.children = null;
+    }
+
+    /**
+     * 逻辑删除
+     * todo:数据可重复使用改造
+     */
+    void delete() {
+        this.fold = true;
+        this.entry = new DirectoryEntry();
+        this.entry.attrs = DirectoryEntry.ATTR_MASK_HIDDEN;
         this.children = null;
     }
 

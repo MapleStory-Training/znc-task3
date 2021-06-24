@@ -16,7 +16,7 @@ import org.cooder.mos.device.IDisk;
 public class FatFileOutputStream extends OutputStream {
     private final byte[] zeroBuffer = new byte[Layout.PER_SECTOR_SIZE];
     private final byte[] buffer = new byte[Layout.PER_SECTOR_SIZE];
-    private int pos = 0;
+    private int pos;
     private int count = 0;
     private int markCount = 0;
     private int currentClusterIdx;
@@ -37,7 +37,7 @@ public class FatFileOutputStream extends OutputStream {
     }
 
     @Override
-    public void write(int b) throws IOException {
+    public void write(int b) {
         if (pos >= buffer.length) {
             flush();
             resetBuffer();
@@ -83,7 +83,7 @@ public class FatFileOutputStream extends OutputStream {
     }
 
     private int nextSector() {
-        int next = -1;
+        int next;
         if (currentSectorIdx == lastSectorIdx(currentClusterIdx)) {
             int nextCluster = fat.nextFreeCluster(currentClusterIdx);
             if (nextCluster < 0) {
