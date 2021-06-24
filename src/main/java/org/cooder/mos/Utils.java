@@ -33,14 +33,13 @@ public class Utils {
 
     public static void copyStreamNoCloseOut(InputStreamReader reader, PrintStream out) throws IOException {
         try {
-            int v = 0;
+            int v;
             while ((v = reader.read()) != -1) {
                 out.print((char) v);
             }
-        } catch (IOException e) {
-            throw e;
         } finally {
             out.flush();
+            out.println();
             close(reader);
         }
     }

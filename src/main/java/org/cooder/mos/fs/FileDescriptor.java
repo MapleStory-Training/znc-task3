@@ -69,7 +69,7 @@ public class FileDescriptor {
         return node.getLfName();
     }
 
-    public String getLfPath() {
+    public String getLfnPath() {
         return node.getLfnPath();
     }
 

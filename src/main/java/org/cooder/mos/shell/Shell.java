@@ -45,7 +45,7 @@ public class Shell implements Runnable {
     }
 
     public String currentPath() {
-        return current.isRoot() ? current.getLfName() : current.getLfPath();
+        return current.isRoot() ? current.getLfName() : current.getLfnPath();
     }
 
     public void loop() {
@@ -116,15 +116,15 @@ public class Shell implements Runnable {
 
     public String[] absolutePath(String path) {
         if (path.equals(".")) {
-            path = current.getLfPath();
+            path = current.getLfnPath();
         } else if (path.equals("..")) {
             if (current.isRoot()) {
-                path = current.getLfPath();
+                path = current.getLfnPath();
             } else {
                 path = current.getParentPath();
             }
         } else if (!path.startsWith("/")) {
-            path = current.getLfPath() + IFileSystem.separator + path;
+            path = current.getLfnPath() + IFileSystem.separator + path;
         }
         return Utils.normalizePath(path);
     }
@@ -135,6 +135,6 @@ public class Shell implements Runnable {
     }
 
     private void prompt() {
-        out.print(String.format("root@mos-nil:%s$", currentPath()));
+        out.print(String.format("root@mos-znc:%s$", currentPath()));
     }
 }
